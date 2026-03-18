@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Name Registry - Blockchain dApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .wallet-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            font-size: 14px;
+            color: #495057;
+            word-break: break-all;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        .connect-btn {
+            background: #28a745;
+        }
+
+        .connect-btn:hover {
+            background: #218838;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .name-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .name-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .name-item strong {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .name-item small {
+            color: #6c757d;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fee-info {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-box.show {
+            display: block;
+        }
+
+        .error-box h3 {
+            color: #721c24;
+            margin-bottom: 10px;
+        }
+
+        .error-box pre {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Error Box -->
+        <div id="errorBox" class="error-box">
+            <h3>⚠️ Setup Error</h3>
+            <p id="errorMessage"></p>
+        </div>
+
+        <header>
+            <h1>🔗 Name Registry</h1>
+            <p>Register your unique name on the blockchain</p>
+            
+            <div id="walletSection">
+                <button id="connectBtn" class="connect-btn">Loading...</button>
+                <div id="walletInfo" class="wallet-info hidden">
+                    <strong>Connected Wallet:</strong>
+                    <div class="wallet-address" id="walletAddress"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Check Availability Section -->
+        <div class="card">
+            <h2>🔍 Check Name Availability</h2>
+            <div class="input-group">
+                <label for="checkName">Enter name to check:</label>
+                <input type="text" id="checkName" placeholder="e.g., myname">
+            </div>
+            <button id="checkBtn">Check Availability</button>
+            <div id="checkStatus" class="status"></div>
+        </div>
+
+        <!-- Register Name Section -->
+        <div class="card">
+            <h2>✅ Register Name</h2>
+            <div class="fee-info">
+                <strong>Registration Fee:</strong> 0.01 ETH
+            </div>
+            <div class="input-group">
+                <label for="registerName">Enter name to register:</label>
+                <input type="text" id="registerName" placeholder="e.g., myname">
+            </div>
+            <button id="registerBtn">Register Name</button>
+            <div id="registerStatus" class="status"></div>
+        </div>
+
+        <!-- My Names Section -->
+        <div class="card">
+            <h2>📋 My Registered Names</h2>
+            <button id="loadNamesBtn">Load My Names</button>
+            <div id="myNamesStatus" class="status"></div>
+            <ul id="namesList" class="name-list"></ul>
+        </div>
+
+        <!-- Transfer Name Section -->
+        <div class="card">
+            <h2>🔄 Transfer Name</h2>
+            <div class="input-group">
+                <label for="transferName">Name to transfer:</label>
+                <input type="text" id="transferName" placeholder="e.g., myname">
+            </div>
+            <div class="input-group">
+                <label for="transferTo">Transfer to address:</label>
+                <input type="text" id="transferTo" placeholder="0x...">
+            </div>
+            <button id="transferBtn">Transfer Name</button>
+            <div id="transferStatus" class="status"></div>
+        </div>
+    </div>
+
+    <!-- Load Ethers.js - LOCAL FILE -->
+    <script src="./ethers.umd.min.js"></script>
+    
+    <script>
+        // ============================================================
+        // CONTRACT CONFIGURATION - UPDATE THIS AFTER DEPLOYMENT!
+        // ============================================================
+        const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+        
+        const CONTRACT_ABI = [
+            "function isAvailable(string memory name) public view returns (bool)",
+            "function registerName(string memory name) public payable",
+            "function getOwner(string memory name) public view returns (address)",
+            "function getNameDetails(string memory name) public view returns (address owner, uint256 registrationTime, bool exists)",
+            "function transferName(string memory name, address newOwner) public",
+            "function getNamesOwnedBy(address owner) public view returns (string[] memory)",
+            "function registrationFee() public view returns (uint256)",
+            "event NameRegistered(string name, address indexed owner, uint256 timestamp)",
+            "event NameTransferred(string name, address indexed from, address indexed to)"
+        ];
+
+        // Global variables
+        let provider;
+        let signer;
+        let contract;
+        let userAddress;
+
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.innerHTML = message;
+            errorBox.classList.add('show');
+        }
+
+        // Check everything on load
+        window.addEventListener('load', function() {
+            console.log('Checking setup...');
+            
+            // Check Ethers.js
+            if (typeof ethers === 'undefined') {
+                showError(`
+                    <strong>❌ Ethers.js NOT FOUND!</strong><br><br>
+                    You need to download ethers.js locally:<br><br>
+                    <strong>Steps:</strong><br>
+                    1. Download from: <a href="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" target="_blank">Click here</a><br>
+                    2. Save as: <code>ethers.umd.min.js</code><br>
+                    3. Put it in the SAME folder as this HTML file<br>
+                    4. Refresh this page<br><br>
+                    <strong>Or use this command:</strong><br>
+                    <pre>curl -o ethers.umd.min.js https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js</pre>
+                `);
+                document.getElementById('connectBtn').textContent = 'Fix Setup First';
+                document.getElementById('connectBtn').disabled = true;
+                return;
+            }
+            
+            console.log('✅ Ethers.js loaded');
+            
+            // Check MetaMask
+            if (typeof window.ethereum === 'undefined') {
+                console.log('❌ MetaMask not detected');
+                document.getElementById('connectBtn').textContent = 'Install MetaMask';
+                document.getElementById('connectBtn').onclick = function() {
+                    window.open('https://metamask.io/download/', '_blank');
+                };
+            } else {
+                console.log('✅ MetaMask detected');
+                document.getElementById('connectBtn').textContent = 'Connect MetaMask';
+                document.getElementById('connectBtn').disabled = false;
+            }
+        });
+
+        // Connect to MetaMask
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+            if (typeof ethers === 'undefined') {
+                alert('Please download ethers.js first! See the red box above.');
+                return;
+            }
+
+            if (!window.ethereum) {
+                window.open('https://metamask.io/download/', '_blank');
+                return;
+            }
+
+            try {
+                console.log('Requesting accounts...');
+                const accounts = await window.ethereum.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                document.getElementById('walletAddress').textContent = userAddress;
+                document.getElementById('walletInfo').classList.remove('hidden');
+                document.getElementById('connectBtn').textContent = 'Connected ✓';
+                document.getElementById('connectBtn').disabled = true;
+                document.getElementById('errorBox').classList.remove('show');
+                
+                showStatus('checkStatus', 'Wallet connected!', 'success');
+                
+            } catch (error) {
+                console.error(error);
+                if (error.code === 4001) {
+                    showStatus('checkStatus', 'Connection rejected', 'error');
+                } else {
+                    showStatus('checkStatus', 'Error: ' + error.message, 'error');
+                }
+            }
+        });
+
+        // Check availability
+        document.getElementById('checkBtn').addEventListener('click', async () => {
+            const name = document.getElementById('checkName').value.trim();
+            if (!name) {
+                showStatus('checkStatus', 'Enter a name', 'error');
+                return;
+            }
+            if (!contract) {
+                showStatus('checkStatus', 'Connect wallet first', 'error');
+                return;
+            }
+            try {
+                showStatus('checkStatus', 'Checking...', 'info');
+                const available = await contract.isAvailable(name);
+                if (available) {
+                    showStatus('checkStatus', `✅ "${name}" is available!`, 'success');
+                } else {
+                    const owner = await contract.getOwner(name);
+                    showStatus('checkStatus', `❌ "${name}" is taken`, 'error');
+                }
+            } catch (error) {
+                showStatus('checkStatus', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        // Register
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const name = document.getElementById('registerName').value.trim();
+            if (!name) {
+                showStatus('registerStatus', 'Enter a name', 'error');
+                return;
+            }
+            if (!contract) {
+                showStatus('registerStatus', 'Connect wallet first', 'error');
+                return;
+            }
+            try {
+                showStatus('registerStatus', 'Confirm in MetaMask...', 'info');
+                const fee = await contract.registrationFee();
+                const tx = await contract.registerName(name, { value: fee });
+                showStatus('registerStatus', 'Waiting...', 'info');
+                await tx.wait();
+                showStatus('registerStatus', `✅ Registered "${name}"!`, 'success');
+                document.getElementById('registerName').value = '';
+            } catch (error) {
+                if (error.code === 4001) {
+                    showStatus('registerStatus', 'Cancelled', 'error');
+                } else {
+                    showStatus('registerStatus', 'Error: ' + error.message, 'error');
+                }
+            }
+        });
+
+        // Load names
+        document.getElementById('loadNamesBtn').addEventListener('click', async () => {
+            if (!contract || !userAddress) {
+                showStatus('myNamesStatus', 'Connect wallet first', 'error');
+                return;
+            }
+            try {
+                showStatus('myNamesStatus', 'Loading...', 'info');
+                const names = await contract.getNamesOwnedBy(userAddress);
+                const namesList = document.getElementById('namesList');
+                namesList.innerHTML = '';
+                if (names.length === 0) {
+                    showStatus('myNamesStatus', 'No names yet', 'info');
+                } else {
+                    showStatus('myNamesStatus', `Found ${names.length} name(s)`, 'success');
+                    for (let name of names) {
+                        const details = await contract.getNameDetails(name);
+                        const date = new Date(details.registrationTime * 1000);
+                        const li = document.createElement('li');
+                        li.className = 'name-item';
+                        li.innerHTML = `<div><strong>${name}</strong><small>Registered: ${date.toLocaleString()}</small></div>`;
+                        namesList.appendChild(li);
+                    }
+                }
+            } catch (error) {
+                showStatus('myNamesStatus', 'Error: ' + error.message, 'error');
+            }
+        });
+
+        // Transfer
+        document.getElementById('transferBtn').addEventListener('click', async () => {
+            const name = document.getElementById('transferName').value.trim();
+            const toAddress = document.getElementById('transferTo').value.trim();
+            if (!name || !toAddress) {
+                showStatus('transferStatus', 'Enter name and address', 'error');
+                return;
+            }
+            if (!contract) {
+                showStatus('transferStatus', 'Connect wallet first', 'error');
+                return;
+            }
+            try {
+                showStatus('transferStatus', 'Confirm in MetaMask...', 'info');
+                const tx = await contract.transferName(name, toAddress);
+                showStatus('transferStatus', 'Waiting...', 'info');
+                await tx.wait();
+                showStatus('transferStatus', `✅ Transferred "${name}"!`, 'success');
+                document.getElementById('transferName').value = '';
+                document.getElementById('transferTo').value = '';
+            } catch (error) {
+                if (error.code === 4001) {
+                    showStatus('transferStatus', 'Cancelled', 'error');
+                } else {
+                    showStatus('transferStatus', 'Error: ' + error.message, 'error');
+                }
+            }
+        });
+
+        function showStatus(elementId, message, type) {
+            const statusElement = document.getElementById(elementId);
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+            statusElement.style.display = 'block';
+            if (type === 'success') {
+                setTimeout(() => { statusElement.style.display = 'none'; }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
